@@ -22,6 +22,10 @@ import StatsOverview from '@/components/StatsOverview';
 import StudentForm from '@/components/StudentForm';
 import PaymentManagement from '@/components/PaymentManagement';
 import StudentSearch from '@/components/StudentSearch';
+import SubjectsManagement from '@/components/SubjectsManagement';
+import WithdrawalsManagement from '@/components/WithdrawalsManagement';
+import StatisticsPage from '@/components/StatisticsPage';
+import SettingsPage from '@/components/SettingsPage';
 
 interface DashboardProps {
   user: any;
@@ -42,6 +46,14 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
         return <PaymentManagement />;
       case 'search':
         return <StudentSearch />;
+      case 'subjects':
+        return <SubjectsManagement />;
+      case 'withdrawals':
+        return <WithdrawalsManagement />;
+      case 'statistics':
+        return <StatisticsPage />;
+      case 'settings':
+        return <SettingsPage />;
       default:
         return <StatsOverview />;
     }
