@@ -30,7 +30,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
     // Simulate login validation
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (loginUsername && loginPassword) {
+    if (loginUsername && loginPassword && loginUsername === 'admin' && loginPassword === VERIFICATION_CODE) {
       onLogin({ username: loginUsername, role: 'admin' });
       toast({
         title: 'تم تسجيل الدخول بنجاح',
@@ -39,7 +39,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
     } else {
       toast({
         title: 'خطأ في تسجيل الدخول',
-        description: 'يرجى التحقق من البيانات المدخلة',
+        description: 'اسم المستخدم أو رمز التحقق غير صحيح',
         variant: 'destructive',
       });
     }

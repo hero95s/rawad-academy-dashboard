@@ -23,6 +23,7 @@ import StudentForm from '@/components/StudentForm';
 import PaymentManagement from '@/components/PaymentManagement';
 import StudentSearch from '@/components/StudentSearch';
 import SubjectsManagement from '@/components/SubjectsManagement';
+import TeachersManagement from '@/components/TeachersManagement';
 import WithdrawalsManagement from '@/components/WithdrawalsManagement';
 import StatisticsPage from '@/components/StatisticsPage';
 import SettingsPage from '@/components/SettingsPage';
@@ -48,6 +49,8 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
         return <StudentSearch />;
       case 'subjects':
         return <SubjectsManagement />;
+      case 'teachers':
+        return <TeachersManagement />;
       case 'withdrawals':
         return <WithdrawalsManagement />;
       case 'statistics':

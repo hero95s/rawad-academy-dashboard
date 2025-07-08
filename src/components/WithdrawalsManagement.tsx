@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { DollarSign, Plus, Edit, Trash2, Calendar, FileText } from 'lucide-react';
+import { DollarSign, Plus, Edit, Trash2, Calendar, FileText, Printer } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface Withdrawal {
@@ -144,6 +144,68 @@ const WithdrawalsManagement = () => {
     withdrawal.notes.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handlePrint = () => {
+    const printContent = `
+      <html dir="rtl">
+        <head>
+          <title>تقرير عمليات السحب</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; direction: rtl; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .info { margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+            th { background-color: #f2f2f2; }
+            .total { font-weight: bold; background-color: #f9f9f9; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>معهد إبداع الرواد</h1>
+            <h2>تقرير عمليات السحب</h2>
+          </div>
+          <div class="info">
+            <p><strong>طُبع بواسطة:</strong> المدير</p>
+            <p><strong>تاريخ الطباعة:</strong> ${new Date().toLocaleDateString('ar')}</p>
+            <p><strong>وقت الطباعة:</strong> ${new Date().toLocaleTimeString('ar')}</p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>اسم العملية</th>
+                <th>التاريخ</th>
+                <th>المبلغ</th>
+                <th>الملاحظات</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredWithdrawals.map(w => `
+                <tr>
+                  <td>${w.name}</td>
+                  <td>${new Date(w.date).toLocaleDateString('ar')}</td>
+                  <td>${w.amount.toLocaleString()} د.ع</td>
+                  <td>${w.notes || 'لا توجد ملاحظات'}</td>
+                </tr>
+              `).join('')}
+              <tr class="total">
+                <td colspan="2"><strong>الإجمالي</strong></td>
+                <td><strong>${totalWithdrawals.toLocaleString()} د.ع</strong></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
   return (
     <div className="space-y-6" dir="rtl">
       {/* Summary Card */}
@@ -178,6 +240,15 @@ const WithdrawalsManagement = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1"
             />
+
+            <Button
+              onClick={handlePrint}
+              variant="outline"
+              className="border-purple-200 text-purple-700 hover:bg-purple-50"
+            >
+              <Printer className="ml-2 h-4 w-4" />
+              🖨️ طباعة العمليات
+            </Button>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>

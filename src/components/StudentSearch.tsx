@@ -3,8 +3,12 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, User, Phone, MapPin, GraduationCap, CreditCard } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface Student {
   id: string;
@@ -26,6 +30,15 @@ interface Student {
 const StudentSearch = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    fullName: '',
+    phone: '',
+    region: '',
+    parentPhone: '',
+    grade: '',
+    subjects: [] as string[]
+  });
 
   // Mock data
   const students: Student[] = [
@@ -71,6 +84,30 @@ const StudentSearch = () => {
     if (percentage >= 100) return { status: 'مكتمل', color: 'bg-green-100 text-green-700' };
     if (percentage >= 50) return { status: 'جزئي', color: 'bg-yellow-100 text-yellow-700' };
     return { status: 'غير مدفوع', color: 'bg-red-100 text-red-700' };
+  };
+
+  const handleEditStudent = (student: Student) => {
+    setEditForm({
+      fullName: student.fullName,
+      phone: student.phone,
+      region: student.region,
+      parentPhone: student.parentPhone,
+      grade: student.grade,
+      subjects: student.subjects
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!selectedStudent) return;
+    
+    // Here you would typically update the database
+    toast({
+      title: 'تم بنجاح',
+      description: 'تم تحديث بيانات الطالب',
+    });
+    
+    setEditModalOpen(false);
   };
 
   return (
@@ -260,7 +297,10 @@ const StudentSearch = () => {
             </div>
 
             <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => setEditModalOpen(true)}
+              >
                 تعديل البيانات
               </Button>
               <Button className="bg-gradient-to-r from-purple-500 to-indigo-500">
@@ -270,6 +310,82 @@ const StudentSearch = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Edit Student Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>تعديل بيانات الطالب</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">الاسم الكامل</Label>
+              <Input
+                id="edit-name"
+                value={editForm.fullName}
+                onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-phone">رقم الهاتف</Label>
+              <Input
+                id="edit-phone"
+                value={editForm.phone}
+                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-region">المنطقة</Label>
+              <Input
+                id="edit-region"
+                value={editForm.region}
+                onChange={(e) => setEditForm({ ...editForm, region: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-parent-phone">هاتف ولي الأمر</Label>
+              <Input
+                id="edit-parent-phone"
+                value={editForm.parentPhone}
+                onChange={(e) => setEditForm({ ...editForm, parentPhone: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-grade">الصف</Label>
+              <Select value={editForm.grade} onValueChange={(value) => setEditForm({ ...editForm, grade: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="اختر الصف" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="السادس علوم">السادس علوم</SelectItem>
+                  <SelectItem value="السادس أدبي">السادس أدبي</SelectItem>
+                  <SelectItem value="السادس مهني">السادس مهني</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex gap-3 pt-4">
+              <Button 
+                onClick={handleSaveEdit}
+                className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600"
+              >
+                حفظ التعديلات
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setEditModalOpen(false)}
+                className="flex-1"
+              >
+                إلغاء
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import PartialPaymentsTable from '@/components/PartialPaymentsTable';
 import { 
   Users, 
   DollarSign, 
@@ -191,6 +192,9 @@ const StatsOverview = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Partial Payments Table */}
+      <PartialPaymentsTable />
     </div>
   );
 };
