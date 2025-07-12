@@ -119,7 +119,7 @@ const SubjectsManagement = () => {
     });
   };
 
-  const filteredSubjects = selectedTeacher
+  const filteredSubjects = selectedTeacher && selectedTeacher !== 'all'
     ? subjects.filter(subject => subject.teacher === selectedTeacher)
     : subjects;
 
@@ -139,7 +139,7 @@ const SubjectsManagement = () => {
                 <SelectValue placeholder="فلترة حسب المعلم" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">جميع المعلمين</SelectItem>
+                <SelectItem value="all">جميع المعلمين</SelectItem>
                 {teachers.map((teacher) => (
                   <SelectItem key={teacher.id} value={teacher.name}>
                     {teacher.name} - {teacher.specialization}
