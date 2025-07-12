@@ -77,7 +77,256 @@ const StatisticsPage = () => {
   ];
 
   const handlePrint = (type: string) => {
-    window.print();
+    let dataArray: Student[] = [];
+    let title = '';
+    let headerColor = '';
+    
+    switch (type) {
+      case 'paid':
+        dataArray = paidStudents;
+        title = 'تقرير الطلاب المسددين بالكامل';
+        headerColor = '#10b981';
+        break;
+      case 'unpaid':
+        dataArray = unpaidStudents;
+        title = 'تقرير الطلاب غير المسددين';
+        headerColor = '#ef4444';
+        break;
+      case 'partial':
+        dataArray = partialStudents;
+        title = 'تقرير الطلاب المسددين جزئياً';
+        headerColor = '#f59e0b';
+        break;
+      default:
+        return;
+    }
+
+    const totalPaid = dataArray.reduce((sum, student) => sum + student.paidAmount, 0);
+    const totalRemaining = dataArray.reduce((sum, student) => sum + (student.totalFee - student.paidAmount), 0);
+
+    const printContent = `
+      <html dir="rtl">
+        <head>
+          <title>${title}</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 20px; 
+              direction: rtl; 
+              color: #333;
+            }
+            .header { 
+              text-align: center; 
+              margin-bottom: 30px; 
+              border-bottom: 2px solid ${headerColor};
+              padding-bottom: 20px;
+            }
+            .institute-name {
+              font-size: 24px;
+              font-weight: bold;
+              color: ${headerColor};
+              margin-bottom: 10px;
+            }
+            .report-title {
+              font-size: 20px;
+              color: #1f2937;
+              margin-bottom: 5px;
+            }
+            .info { 
+              margin-bottom: 20px; 
+              background: ${type === 'paid' ? '#dcfce7' : type === 'unpaid' ? '#fecaca' : '#fef3c7'};
+              padding: 15px;
+              border-radius: 8px;
+            }
+            .summary-stats {
+              margin-bottom: 20px;
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 15px;
+              padding: 15px;
+              background: #f9fafb;
+              border-radius: 8px;
+            }
+            .stat-item {
+              text-align: center;
+              padding: 10px;
+              background: white;
+              border-radius: 6px;
+              border: 1px solid #e5e7eb;
+            }
+            .stat-label {
+              font-size: 12px;
+              color: #6b7280;
+              margin-bottom: 5px;
+            }
+            .stat-value {
+              font-size: 16px;
+              font-weight: bold;
+              color: ${headerColor};
+              font-family: 'Courier New', monospace;
+            }
+            table { 
+              width: 100%; 
+              border-collapse: collapse; 
+              margin-top: 20px;
+              font-size: 14px;
+            }
+            th, td { 
+              border: 1px solid #d1d5db; 
+              padding: 12px 8px; 
+              text-align: right; 
+            }
+            th { 
+              background-color: ${type === 'paid' ? '#dcfce7' : type === 'unpaid' ? '#fecaca' : '#fef3c7'}; 
+              font-weight: bold;
+              color: #1f2937;
+            }
+            .total-row { 
+              font-weight: bold; 
+              background-color: ${headerColor}20; 
+              color: #1f2937;
+            }
+            .student-row:nth-child(even) {
+              background-color: ${type === 'paid' ? '#f0fdf4' : type === 'unpaid' ? '#fef2f2' : '#fffbeb'};
+            }
+            .amount {
+              font-family: 'Courier New', monospace;
+              font-weight: bold;
+            }
+            .amount-paid {
+              color: #10b981;
+            }
+            .amount-unpaid {
+              color: #ef4444;
+            }
+            .amount-remaining {
+              color: #f59e0b;
+            }
+            .footer {
+              margin-top: 30px;
+              border-top: 1px solid #d1d5db;
+              padding-top: 20px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            }
+            .signature-area {
+              text-align: center;
+              margin-top: 50px;
+            }
+            .signature-line {
+              margin: 60px auto 10px;
+              border-top: 1px solid #000;
+              width: 200px;
+              text-align: center;
+              padding-top: 10px;
+              font-weight: bold;
+            }
+            @media print {
+              body { margin: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="institute-name">معهد إبداع الرواد</div>
+            <div class="report-title">${title}</div>
+          </div>
+          
+          <div class="info">
+            <div><strong>طُبع بواسطة:</strong> المدير</div>
+            <div><strong>تاريخ الطباعة:</strong> ${new Date().toLocaleDateString('ar')}</div>
+            <div><strong>وقت الطباعة:</strong> ${new Date().toLocaleTimeString('ar')}</div>
+          </div>
+
+          <div class="summary-stats">
+            <div class="stat-item">
+              <div class="stat-label">عدد الطلاب</div>
+              <div class="stat-value">${dataArray.length} طالب</div>
+            </div>
+            ${type !== 'unpaid' ? `
+            <div class="stat-item">
+              <div class="stat-label">إجمالي المدفوع</div>
+              <div class="stat-value">${totalPaid.toLocaleString()} د.ع</div>
+            </div>
+            ` : ''}
+            ${type !== 'paid' ? `
+            <div class="stat-item">
+              <div class="stat-label">${type === 'unpaid' ? 'إجمالي المطلوب' : 'إجمالي المتبقي'}</div>
+              <div class="stat-value">${totalRemaining.toLocaleString()} د.ع</div>
+            </div>
+            ` : ''}
+            <div class="stat-item">
+              <div class="stat-label">إجمالي التكاليف</div>
+              <div class="stat-value">${(dataArray.length * 300000).toLocaleString()} د.ع</div>
+            </div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>الاسم</th>
+                <th>المادة</th>
+                <th>المعلم</th>
+                ${type === 'paid' ? '<th>المبلغ المدفوع</th>' : 
+                  type === 'unpaid' ? '<th>المبلغ المطلوب</th>' : 
+                  '<th>المدفوع</th><th>المتبقي</th>'}
+              </tr>
+            </thead>
+            <tbody>
+              ${dataArray.map(student => `
+                <tr class="student-row">
+                  <td>${student.name}</td>
+                  <td>${student.subject}</td>
+                  <td>${student.teacher}</td>
+                  ${type === 'paid' ? 
+                    `<td class="amount amount-paid">${student.paidAmount.toLocaleString()} د.ع</td>` :
+                    type === 'unpaid' ? 
+                    `<td class="amount amount-unpaid">${student.totalFee.toLocaleString()} د.ع</td>` :
+                    `<td class="amount amount-paid">${student.paidAmount.toLocaleString()} د.ع</td>
+                     <td class="amount amount-remaining">${(student.totalFee - student.paidAmount).toLocaleString()} د.ع</td>`
+                  }
+                </tr>
+              `).join('')}
+              <tr class="total-row">
+                <td colspan="3"><strong>الإجمالي</strong></td>
+                ${type === 'paid' ? 
+                  `<td class="amount"><strong>${totalPaid.toLocaleString()} د.ع</strong></td>` :
+                  type === 'unpaid' ? 
+                  `<td class="amount"><strong>${totalRemaining.toLocaleString()} د.ع</strong></td>` :
+                  `<td class="amount"><strong>${totalPaid.toLocaleString()} د.ع</strong></td>
+                   <td class="amount"><strong>${totalRemaining.toLocaleString()} د.ع</strong></td>`
+                }
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="footer">
+            <div>
+              <strong>عدد الطلاب:</strong> ${dataArray.length} طالب
+            </div>
+            <div>
+              <strong>نسبة ${type === 'paid' ? 'التحصيل' : type === 'unpaid' ? 'عدم التحصيل' : 'التحصيل الجزئي'}:</strong> 
+              ${((dataArray.length / students.length) * 100).toFixed(1)}%
+            </div>
+          </div>
+
+          <div class="signature-area">
+            <div class="signature-line">
+              توقيع المدير
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
   };
 
   const getStatusColor = (status: string) => {
