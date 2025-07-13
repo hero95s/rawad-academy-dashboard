@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Shield, User, Lock, Bell, DollarSign, Save, Settings as SettingsIcon } from 'lucide-react';
+import { Shield, User, Lock, Bell, DollarSign, Save, Settings as SettingsIcon, Trash2, Users, BookOpen, GraduationCap, FileText, BarChart3 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { DeleteConfirmationModal } from '@/components/ui/delete-confirmation-modal';
 
 const SettingsPage = () => {
   const [settings, setSettings] = useState({
@@ -20,6 +21,11 @@ const SettingsPage = () => {
   });
 
   const [showPasswords, setShowPasswords] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    sectionName: '',
+    sectionKey: '',
+  });
 
   const handleSaveSettings = () => {
     // Validation
@@ -62,6 +68,95 @@ const SettingsPage = () => {
       [field]: value,
     }));
   };
+
+  const handleDeleteSection = (sectionName: string, sectionKey: string) => {
+    setDeleteModal({
+      isOpen: true,
+      sectionName,
+      sectionKey,
+    });
+  };
+
+  const confirmDeleteSection = () => {
+    const { sectionName } = deleteModal;
+    
+    // Simulate data deletion for each section
+    switch (deleteModal.sectionKey) {
+      case 'students':
+        // In a real app, this would call an API to delete student data
+        console.log('Deleting all student data...');
+        break;
+      case 'subjects':
+        // Delete subject data
+        console.log('Deleting all subject data...');
+        break;
+      case 'classes':
+        // Delete class data
+        console.log('Deleting all class data...');
+        break;
+      case 'withdrawals':
+        // Delete withdrawal records
+        console.log('Deleting all withdrawal records...');
+        break;
+      case 'statistics':
+        // Delete statistics data
+        console.log('Deleting all statistics data...');
+        break;
+      case 'logs':
+        // Delete administrative logs
+        console.log('Deleting all administrative logs...');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({
+      isOpen: false,
+      sectionName: '',
+      sectionKey: '',
+    });
+  };
+
+  const deleteSections = [
+    {
+      key: 'students',
+      name: 'الطلاب',
+      icon: Users,
+      description: 'جميع بيانات الطلاب والمعلومات الشخصية',
+    },
+    {
+      key: 'subjects',
+      name: 'المواد الدراسية',
+      icon: BookOpen,
+      description: 'جميع المواد والتكاليف المرتبطة بها',
+    },
+    {
+      key: 'classes',
+      name: 'الصفوف',
+      icon: GraduationCap,
+      description: 'جميع الصفوف والفصول الدراسية',
+    },
+    {
+      key: 'withdrawals',
+      name: 'سجلات السحب',
+      icon: FileText,
+      description: 'جميع عمليات السحب والمعاملات المالية',
+    },
+    {
+      key: 'statistics',
+      name: 'الإحصائيات',
+      icon: BarChart3,
+      description: 'جميع البيانات الإحصائية والتقارير',
+    },
+    {
+      key: 'logs',
+      name: 'السجلات الإدارية',
+      icon: FileText,
+      description: 'جميع سجلات النشاطات والعمليات الإدارية',
+    },
+  ];
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -233,6 +328,54 @@ const SettingsPage = () => {
 
           <Separator />
 
+          {/* Delete Section Data */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
+              <h3 className="text-lg font-semibold text-red-600">حذف بيانات الأقسام</h3>
+            </div>
+            
+            <div className="pl-6">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <div className="flex items-start gap-2">
+                  <Shield className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-red-700">
+                    <p className="font-medium">تحذير هام!</p>
+                    <p>عمليات الحذف هذه لا يمكن التراجع عنها. تأكد من عمل نسخة احتياطية قبل المتابعة.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-3">
+                {deleteSections.map((section) => {
+                  const IconComponent = section.icon;
+                  return (
+                    <div key={section.key} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                      <div className="flex items-center gap-3">
+                        <IconComponent className="h-5 w-5 text-gray-600" />
+                        <div>
+                          <h4 className="font-medium">{section.name}</h4>
+                          <p className="text-sm text-gray-600">{section.description}</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteSection(section.name, section.key)}
+                        className="flex items-center gap-1"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        حذف بيانات {section.name}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
           {/* Save Button */}
           <div className="flex justify-start">
             <Button
@@ -270,6 +413,15 @@ const SettingsPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        sectionName={deleteModal.sectionName}
+        verificationCode={settings.verificationCode}
+        onConfirm={confirmDeleteSection}
+      />
     </div>
   );
 };
