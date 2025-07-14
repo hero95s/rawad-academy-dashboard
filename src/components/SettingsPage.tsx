@@ -77,38 +77,95 @@ const SettingsPage = () => {
     });
   };
 
-  const confirmDeleteSection = () => {
-    const { sectionName } = deleteModal;
+  const confirmDeleteSection = async () => {
+    const { sectionName, sectionKey } = deleteModal;
     
-    // Simulate data deletion for each section
-    switch (deleteModal.sectionKey) {
+    try {
+      // Call the appropriate deletion function
+      await deleteSectionData(sectionKey);
+      
+      toast({
+        title: 'تم الحذف بنجاح',
+        description: `تم حذف بيانات ${sectionName} بنجاح`,
+      });
+    } catch (error) {
+      toast({
+        title: 'خطأ في الحذف',
+        description: `فشل في حذف بيانات ${sectionName}. يرجى المحاولة مرة أخرى`,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Individual deletion functions for each section
+  const deleteSectionData = async (sectionKey: string) => {
+    switch (sectionKey) {
       case 'students':
-        // In a real app, this would call an API to delete student data
-        console.log('Deleting all student data...');
+        await deleteStudentData();
         break;
       case 'subjects':
-        // Delete subject data
-        console.log('Deleting all subject data...');
+        await deleteSubjectData();
         break;
       case 'classes':
-        // Delete class data
-        console.log('Deleting all class data...');
+        await deleteClassData();
         break;
       case 'withdrawals':
-        // Delete withdrawal records
-        console.log('Deleting all withdrawal records...');
+        await deleteWithdrawalData();
         break;
       case 'statistics':
-        // Delete statistics data
-        console.log('Deleting all statistics data...');
+        await deleteStatisticsData();
         break;
       case 'logs':
-        // Delete administrative logs
-        console.log('Deleting all administrative logs...');
+        await deleteAdminLogs();
         break;
       default:
-        break;
+        throw new Error('نوع البيانات غير مدعوم');
     }
+  };
+
+  // API call functions for each section
+  const deleteStudentData = async () => {
+    // In a real app, this would call your backend API
+    // Example: await fetch('/api/students', { method: 'DELETE' });
+    
+    // For now, clear localStorage data
+    localStorage.removeItem('students');
+    localStorage.removeItem('studentPayments');
+    console.log('Student data deleted successfully');
+  };
+
+  const deleteSubjectData = async () => {
+    // Example: await fetch('/api/subjects', { method: 'DELETE' });
+    localStorage.removeItem('subjects');
+    console.log('Subject data deleted successfully');
+  };
+
+  const deleteClassData = async () => {
+    // Example: await fetch('/api/classes', { method: 'DELETE' });
+    localStorage.removeItem('classes');
+    localStorage.removeItem('classSchedules');
+    console.log('Class data deleted successfully');
+  };
+
+  const deleteWithdrawalData = async () => {
+    // Example: await fetch('/api/withdrawals', { method: 'DELETE' });
+    localStorage.removeItem('withdrawals');
+    localStorage.removeItem('financialRecords');
+    console.log('Withdrawal data deleted successfully');
+  };
+
+  const deleteStatisticsData = async () => {
+    // Example: await fetch('/api/statistics', { method: 'DELETE' });
+    localStorage.removeItem('statistics');
+    localStorage.removeItem('reports');
+    console.log('Statistics data deleted successfully');
+  };
+
+  const deleteAdminLogs = async () => {
+    // Example: await fetch('/api/admin-logs', { method: 'DELETE' });
+    localStorage.removeItem('adminLogs');
+    localStorage.removeItem('systemLogs');
+    console.log('Admin logs deleted successfully');
   };
 
   const closeDeleteModal = () => {
