@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { GraduationCap, Lock, User, Shield, UserPlus, LogIn } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LoginFormProps {
   onLogin: (userData: any) => void;
@@ -27,22 +28,47 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate login validation
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Query the login table securely using Supabase
+      const { data, error } = await supabase
+        .from('login')
+        .select('*')
+        .eq('userName', loginUsername)
+        .eq('password', parseInt(loginPassword))
+        .single();
 
-    if (loginUsername && loginPassword && loginUsername === 'admin' && loginPassword === VERIFICATION_CODE) {
-      onLogin({ username: loginUsername, role: 'admin' });
+      if (error || !data) {
+        toast({
+          title: 'خطأ في تسجيل الدخول',
+          description: 'اسم المستخدم أو كلمة المرور غير صحيحة',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Login successful
+      onLogin({ 
+        username: data.userName, 
+        id: data.id,
+        passLogin: data.passLogin,
+        role: 'admin' 
+      });
+      
       toast({
         title: 'تم تسجيل الدخول بنجاح',
-        description: `مرحباً بك في معهد إبداع الرواد، ${loginUsername}`,
+        description: `مرحباً بك في معهد إبداع الرواد، ${data.userName}`,
       });
-    } else {
+      
+    } catch (err) {
+      console.error('Login error:', err);
       toast({
-        title: 'خطأ في تسجيل الدخول',
-        description: 'اسم المستخدم أو رمز التحقق غير صحيح',
+        title: 'خطأ في الاتصال',
+        description: 'حدث خطأ أثناء محاولة تسجيل الدخول. يرجى المحاولة مرة أخرى.',
         variant: 'destructive',
       });
     }
+    
     setIsLoading(false);
   };
 
@@ -50,28 +76,81 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate registration validation
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Check if verification code is correct
+      if (verificationCode !== VERIFICATION_CODE) {
+        toast({
+          title: 'رمز التحقق خاطئ',
+          description: 'يرجى التحقق من رمز التحقق والمحاولة مرة أخرى',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
 
-    if (registerUsername && registerPassword && verificationCode === VERIFICATION_CODE) {
-      onLogin({ username: registerUsername, role: 'admin' });
+      // Check if username already exists
+      const { data: existingUser } = await supabase
+        .from('login')
+        .select('userName')
+        .eq('userName', registerUsername)
+        .single();
+
+      if (existingUser) {
+        toast({
+          title: 'اسم المستخدم موجود بالفعل',
+          description: 'يرجى اختيار اسم مستخدم آخر',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Insert new user into database
+      const { data: newUser, error } = await supabase
+        .from('login')
+        .insert([
+          {
+            userName: registerUsername,
+            password: parseInt(registerPassword),
+            passLogin: parseInt(VERIFICATION_CODE)
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Registration error:', error);
+        toast({
+          title: 'خطأ في إنشاء الحساب',
+          description: 'حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Registration successful
+      onLogin({ 
+        username: newUser.userName, 
+        id: newUser.id,
+        passLogin: newUser.passLogin,
+        role: 'admin' 
+      });
+      
       toast({
         title: 'تم إنشاء الحساب بنجاح',
-        description: `مرحباً بك في معهد إبداع الرواد، ${registerUsername}`,
+        description: `مرحباً بك في معهد إبداع الرواد، ${newUser.userName}`,
       });
-    } else if (verificationCode !== VERIFICATION_CODE) {
+      
+    } catch (err) {
+      console.error('Registration error:', err);
       toast({
-        title: 'رمز التحقق خاطئ',
-        description: 'يرجى التحقق من رمز التحقق والمحاولة مرة أخرى',
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: 'خطأ في إنشاء الحساب',
-        description: 'يرجى التحقق من البيانات المدخلة',
+        title: 'خطأ في الاتصال',
+        description: 'حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.',
         variant: 'destructive',
       });
     }
+    
     setIsLoading(false);
   };
 
